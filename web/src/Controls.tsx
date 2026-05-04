@@ -78,105 +78,102 @@ export function Controls({
   const beatDots = [0, 1, 2, 3];
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-      {/* Octave selector */}
-      <div className="flex items-center gap-1">
-        <span className="text-[#666] text-xs">Oct</span>
-        {([1, 2] as const).map(n => (
+    <div className="overflow-x-auto scrollbar-hide -mx-2 px-2">
+      <div className="flex items-center gap-2 w-max mx-auto">
+        {/* Octave */}
+        <div className="flex items-center gap-0.5">
+          <span className="text-[#555] text-[10px]">Oct</span>
+          {([1, 2] as const).map(n => (
+            <button
+              key={n}
+              onClick={() => onOctavesChange(n)}
+              className="w-6 h-6 rounded text-[10px] font-medium border cursor-pointer transition-all duration-200 flex items-center justify-center"
+              style={{
+                background: octaves === n ? color : 'transparent',
+                borderColor: octaves === n ? color : '#333',
+                color: octaves === n ? '#fff' : '#888',
+              }}
+            >
+              {n}
+            </button>
+          ))}
+        </div>
+
+        <div className="w-px h-4 bg-[#333]" />
+
+        {/* Tone */}
+        <div className="flex items-center gap-0.5">
+          {TONE_PRESETS.map((preset, i) => (
+            <button
+              key={preset.name}
+              onClick={() => handleToneChange(i)}
+              className="w-6 h-6 rounded text-[11px] border cursor-pointer transition-all duration-200 flex items-center justify-center"
+              style={{
+                background: toneIdx === i ? color : 'transparent',
+                borderColor: toneIdx === i ? color : '#333',
+              }}
+              title={preset.name}
+            >
+              {preset.icon}
+            </button>
+          ))}
+        </div>
+
+        <div className="w-px h-4 bg-[#333]" />
+
+        {/* BPM */}
+        <div className="flex items-center gap-1">
           <button
-            key={n}
-            onClick={() => onOctavesChange(n)}
-            className="w-7 h-7 rounded-md text-xs font-medium border cursor-pointer transition-all duration-200 flex items-center justify-center"
-            style={{
-              background: octaves === n ? color : 'transparent',
-              borderColor: octaves === n ? color : '#333',
-              color: octaves === n ? '#fff' : '#888',
-            }}
+            onClick={() => setBpm(b => Math.max(40, b - 10))}
+            className="w-6 h-6 rounded bg-[#1a1a22] text-[#888] border border-[#333] text-[11px] cursor-pointer"
           >
-            {n}
+            −
           </button>
-        ))}
-      </div>
-
-      {/* Tone selector */}
-      <div className="flex items-center gap-1">
-        {TONE_PRESETS.map((preset, i) => (
+          <span className="text-white text-[11px] font-mono w-6 text-center">{bpm}</span>
           <button
-            key={preset.name}
-            onClick={() => handleToneChange(i)}
-            className="h-7 px-1.5 rounded-md text-xs font-medium border cursor-pointer transition-all duration-200 flex items-center gap-0.5"
-            style={{
-              background: toneIdx === i ? color : 'transparent',
-              borderColor: toneIdx === i ? color : '#333',
-              color: toneIdx === i ? '#fff' : '#888',
-            }}
-            title={preset.name}
+            onClick={() => setBpm(b => Math.min(200, b + 10))}
+            className="w-6 h-6 rounded bg-[#1a1a22] text-[#888] border border-[#333] text-[11px] cursor-pointer"
           >
-            <span>{preset.icon}</span>
-            <span className="hidden sm:inline">{preset.name}</span>
+            +
           </button>
-        ))}
-      </div>
+        </div>
 
-      {/* BPM control */}
-      <div className="flex items-center gap-1.5">
-        <span className="text-[#666] text-xs">BPM</span>
+        <div className="w-px h-4 bg-[#333]" />
+
+        {/* Auto-play */}
         <button
-          onClick={() => setBpm(b => Math.max(40, b - 10))}
-          className="w-7 h-7 rounded-md bg-[#1a1a22] text-[#888] border border-[#333] text-sm cursor-pointer hover:border-[#555] transition-colors"
+          onClick={toggleAutoPlay}
+          className="h-6 px-2 rounded text-[10px] font-medium border cursor-pointer transition-all duration-200 whitespace-nowrap"
+          style={{
+            background: autoPlaying ? color : 'transparent',
+            borderColor: autoPlaying ? color : '#333',
+            color: autoPlaying ? '#fff' : '#999',
+          }}
         >
-          −
+          {autoPlaying ? '⏹' : '▶'} 自動
         </button>
-        <span className="text-white text-sm font-mono w-8 text-center">{bpm}</span>
-        <button
-          onClick={() => setBpm(b => Math.min(200, b + 10))}
-          className="w-7 h-7 rounded-md bg-[#1a1a22] text-[#888] border border-[#333] text-sm cursor-pointer hover:border-[#555] transition-colors"
-        >
-          +
-        </button>
-      </div>
 
-      {/* Auto-play */}
-      <button
-        onClick={toggleAutoPlay}
-        className="px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium border cursor-pointer transition-all duration-200 whitespace-nowrap"
-        style={{
-          background: autoPlaying ? color : 'transparent',
-          borderColor: autoPlaying ? color : '#333',
-          color: autoPlaying ? '#fff' : '#999',
-          boxShadow: autoPlaying ? `0 0 12px ${color}44` : 'none',
-        }}
-      >
-        {autoPlaying ? '⏹ 停止' : '▶ 自動演奏'}
-      </button>
-
-      {/* Metronome */}
-      <div className="flex items-center gap-1.5">
+        {/* Metronome */}
         <button
           onClick={toggleMetronome}
-          className="px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium border cursor-pointer transition-all duration-200 whitespace-nowrap"
+          className="h-6 px-2 rounded text-[10px] font-medium border cursor-pointer transition-all duration-200 whitespace-nowrap"
           style={{
             background: metronomeOn ? '#F59E0B' : 'transparent',
             borderColor: metronomeOn ? '#F59E0B' : '#333',
             color: metronomeOn ? '#fff' : '#999',
-            boxShadow: metronomeOn ? `0 0 12px #F59E0B44` : 'none',
           }}
         >
-          {metronomeOn ? '⏹ 停止' : '🔔 メトロノーム'}
+          {metronomeOn ? '⏹' : '🔔'}
         </button>
+
         {metronomeOn && (
-          <div className="flex gap-1">
+          <div className="flex gap-0.5">
             {beatDots.map(i => (
               <div
                 key={i}
-                className="w-2.5 h-2.5 rounded-full transition-all duration-100"
+                className="w-2 h-2 rounded-full transition-all duration-100"
                 style={{
-                  background: metronomeBeat === i
-                    ? (i === 0 ? '#F59E0B' : '#fff')
-                    : '#333',
-                  boxShadow: metronomeBeat === i
-                    ? `0 0 8px ${i === 0 ? '#F59E0B' : '#fff'}88`
-                    : 'none',
+                  background: metronomeBeat === i ? (i === 0 ? '#F59E0B' : '#fff') : '#333',
                   transform: metronomeBeat === i ? 'scale(1.3)' : 'scale(1)',
                 }}
               />
