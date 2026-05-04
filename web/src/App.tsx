@@ -58,9 +58,9 @@ export default function App() {
   }
 
   return (
-    <div className="flex flex-col h-full px-3 sm:px-6 py-2 sm:py-4 gap-2 sm:gap-3 landscape-compact:gap-1 landscape-compact:py-1">
+    <div className="flex flex-col h-full px-2 sm:px-6 py-1.5 sm:py-3 gap-1 sm:gap-2 landscape-compact:gap-0.5 landscape-compact:py-0.5">
       <header className="text-center shrink-0">
-        <h1 className="text-base sm:text-2xl font-bold tracking-tight text-white landscape-compact:text-sm">
+        <h1 className="text-base sm:text-2xl font-bold tracking-tight text-white landscape-compact:text-sm leading-tight">
           🎹 Sound Study
           <span className="ml-2 text-xs sm:text-sm font-normal text-[#666]">
             {rootName} {scale.name}
@@ -68,7 +68,7 @@ export default function App() {
         </h1>
       </header>
 
-      <div className="flex flex-col gap-1.5 sm:gap-2 landscape-compact:gap-1 shrink-0">
+      <div className="flex flex-col gap-1 sm:gap-1.5 landscape-compact:gap-0.5 shrink-0">
         <ScaleSelector selected={scaleKey} onSelect={setScaleKey} />
         <RootSelector selected={rootIndex} onSelect={setRootIndex} scaleKey={scaleKey} />
       </div>
@@ -89,7 +89,7 @@ export default function App() {
         />
       </div>
 
-      <div className="flex-1 flex items-end min-h-0 pb-1 sm:pb-3 landscape-compact:pb-0.5">
+      <div className="shrink-0 pb-1 sm:pb-2 landscape-compact:pb-0.5">
         <Piano
           scaleKey={scaleKey}
           rootIndex={rootIndex}
@@ -99,7 +99,9 @@ export default function App() {
         />
       </div>
 
-      <footer className="text-center text-[10px] sm:text-xs text-[#444] shrink-0 pb-1 landscape-compact:hidden">
+      <div className="flex-1" />
+
+      <footer className="text-center text-[10px] sm:text-xs text-[#444] shrink-0 pb-0.5 landscape-compact:hidden">
         PCキーボード A〜B 列で演奏 ／ マウス・タッチでも操作可能
       </footer>
     </div>
