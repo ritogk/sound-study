@@ -19,7 +19,7 @@ export function Piano({ keys, reverseKeyMap, scaleKey, rootIndex, pressedNotes, 
   return (
     <div
       className="relative mx-auto select-none h-full"
-      style={{ width: '100%', maxWidth: `${totalWhite * 52}px` }}
+      style={{ width: '100%', maxWidth: totalWhite > 8 ? `${totalWhite * 52}px` : undefined }}
     >
       {whiteKeys.map((key, i) => (
         <WhiteKey
