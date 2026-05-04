@@ -92,7 +92,8 @@ function WhiteKey({ keyInfo, index, totalWhite, scale, rootIndex, isPressed, not
   }
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
     noteOn(keyInfo.note);
   }, [noteOn, keyInfo.note]);
 
@@ -104,7 +105,7 @@ function WhiteKey({ keyInfo, index, totalWhite, scale, rootIndex, isPressed, not
     <div
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
-      onPointerLeave={handlePointerUp}
+      onPointerCancel={handlePointerUp}
       className="absolute bottom-0 rounded-b-lg flex flex-col items-center justify-end pb-2 transition-colors duration-150 cursor-pointer border border-[#1a1a1f]"
       style={{
         left: `${leftPct}%`,
@@ -114,11 +115,12 @@ function WhiteKey({ keyInfo, index, totalWhite, scale, rootIndex, isPressed, not
         boxShadow: shadow,
         color: textColor,
         zIndex: 1,
+        touchAction: 'none',
       }}
     >
-      <span className="text-[9px] sm:text-[10px] font-bold leading-none">{keyInfo.nameJa}</span>
+      <span className="pointer-events-none text-[9px] sm:text-[10px] font-bold leading-none">{keyInfo.nameJa}</span>
       {keyBind && (
-        <span className="text-[7px] sm:text-[8px] opacity-40 mt-0.5 uppercase">{keyBind}</span>
+        <span className="pointer-events-none text-[7px] sm:text-[8px] opacity-40 mt-0.5 uppercase">{keyBind}</span>
       )}
     </div>
   );
@@ -148,8 +150,9 @@ function BlackKey({ keyInfo, whiteIndex, totalWhite, scale, rootIndex, isPressed
   }
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
     e.stopPropagation();
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    e.currentTarget.setPointerCapture(e.pointerId);
     noteOn(keyInfo.note);
   }, [noteOn, keyInfo.note]);
 
@@ -162,7 +165,7 @@ function BlackKey({ keyInfo, whiteIndex, totalWhite, scale, rootIndex, isPressed
     <div
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
-      onPointerLeave={handlePointerUp}
+      onPointerCancel={handlePointerUp}
       className="absolute top-0 rounded-b-md flex flex-col items-center justify-end pb-1.5 transition-colors duration-150 cursor-pointer"
       style={{
         left: `${leftPct}%`,
@@ -172,11 +175,12 @@ function BlackKey({ keyInfo, whiteIndex, totalWhite, scale, rootIndex, isPressed
         boxShadow: shadow,
         color: textColor,
         zIndex: 2,
+        touchAction: 'none',
       }}
     >
-      <span className="text-[7px] sm:text-[8px] font-bold leading-none">{keyInfo.nameJa}</span>
+      <span className="pointer-events-none text-[7px] sm:text-[8px] font-bold leading-none">{keyInfo.nameJa}</span>
       {keyBind && (
-        <span className="text-[6px] sm:text-[7px] opacity-40 mt-0.5 uppercase">{keyBind}</span>
+        <span className="pointer-events-none text-[6px] sm:text-[7px] opacity-40 mt-0.5 uppercase">{keyBind}</span>
       )}
     </div>
   );
