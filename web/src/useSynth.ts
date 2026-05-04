@@ -1,6 +1,50 @@
 import { useCallback, useEffect, useRef } from 'react';
 import * as Tone from 'tone';
 
+export interface TonePreset {
+  name: string;
+  icon: string;
+  options: {
+    oscillator: { type: string };
+    envelope: { attack: number; decay: number; sustain: number; release: number };
+  };
+}
+
+export const TONE_PRESETS: TonePreset[] = [
+  {
+    name: 'ピアノ',
+    icon: '🎹',
+    options: {
+      oscillator: { type: 'triangle8' as const },
+      envelope: { attack: 0.005, decay: 0.2, sustain: 0.3, release: 0.6 },
+    },
+  },
+  {
+    name: 'オルガン',
+    icon: '🎵',
+    options: {
+      oscillator: { type: 'sine4' as const },
+      envelope: { attack: 0.01, decay: 0.1, sustain: 0.8, release: 0.3 },
+    },
+  },
+  {
+    name: 'シンセ',
+    icon: '🎛️',
+    options: {
+      oscillator: { type: 'sawtooth8' as const },
+      envelope: { attack: 0.01, decay: 0.3, sustain: 0.2, release: 0.4 },
+    },
+  },
+  {
+    name: 'ベル',
+    icon: '🔔',
+    options: {
+      oscillator: { type: 'sine8' as const },
+      envelope: { attack: 0.001, decay: 0.6, sustain: 0.05, release: 1.2 },
+    },
+  },
+];
+
 let globalSynth: Tone.PolySynth | null = null;
 
 export async function initAudio() {
@@ -16,8 +60,14 @@ export async function initAudio() {
   synth.maxPolyphony = 16;
   globalSynth = synth;
 
-  // Warm up: play a silent note to prime the audio graph
   synth.triggerAttackRelease('C3', '32n', Tone.now(), 0);
+}
+
+export function setTonePreset(index: number) {
+  if (!globalSynth) return;
+  const preset = TONE_PRESETS[index];
+  if (!preset) return;
+  globalSynth.set(preset.options as unknown as Partial<Tone.SynthOptions>);
 }
 
 export function useSynth() {

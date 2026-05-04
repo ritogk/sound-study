@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { SCALES } from './constants';
+import { TONE_PRESETS, setTonePreset } from './useSynth';
 
 interface Props {
   scaleKey: string;
@@ -25,9 +26,15 @@ export function Controls({
   metronomeBeat,
 }: Props) {
   const [bpm, setBpm] = useState(100);
+  const [toneIdx, setToneIdx] = useState(0);
   const [autoPlaying, setAutoPlaying] = useState(false);
   const [metronomeOn, setMetronomeOn] = useState(false);
   const color = SCALES[scaleKey].color;
+
+  const handleToneChange = useCallback((idx: number) => {
+    setToneIdx(idx);
+    setTonePreset(idx);
+  }, []);
 
   const toggleAutoPlay = useCallback(() => {
     if (autoPlaying) {
@@ -87,6 +94,26 @@ export function Controls({
             }}
           >
             {n}
+          </button>
+        ))}
+      </div>
+
+      {/* Tone selector */}
+      <div className="flex items-center gap-1">
+        {TONE_PRESETS.map((preset, i) => (
+          <button
+            key={preset.name}
+            onClick={() => handleToneChange(i)}
+            className="h-7 px-1.5 rounded-md text-xs font-medium border cursor-pointer transition-all duration-200 flex items-center gap-0.5"
+            style={{
+              background: toneIdx === i ? color : 'transparent',
+              borderColor: toneIdx === i ? color : '#333',
+              color: toneIdx === i ? '#fff' : '#888',
+            }}
+            title={preset.name}
+          >
+            <span>{preset.icon}</span>
+            <span className="hidden sm:inline">{preset.name}</span>
           </button>
         ))}
       </div>
