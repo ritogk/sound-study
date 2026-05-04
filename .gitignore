@@ -1,0 +1,15 @@
+node_modules/
+dist/
+
+# CDK build output
+infra/*.js
+infra/*.d.ts
+infra/*.d.ts.map
+infra/cdk.out/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
