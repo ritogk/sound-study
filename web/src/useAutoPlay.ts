@@ -1,8 +1,8 @@
 import { useRef, useCallback, useEffect } from 'react';
-import { PIANO_KEYS, SCALES, type KeyInfo } from './constants';
+import { SCALES, buildKeys, type KeyInfo } from './constants';
 
-function getScaleNotes(rootIndex: number, intervals: number[]): KeyInfo[] {
-  return PIANO_KEYS.filter(k => {
+function getScaleNotes(allKeys: KeyInfo[], rootIndex: number, intervals: number[]): KeyInfo[] {
+  return allKeys.filter(k => {
     const rel = (k.semitone - rootIndex + 12) % 12;
     return intervals.includes(rel);
   });
@@ -12,14 +12,12 @@ function pickNextNote(scaleNotes: KeyInfo[], prevIdx: number): number {
   const len = scaleNotes.length;
   if (len <= 1) return 0;
 
-  // Prefer stepwise motion (±1-2 steps) with occasional leaps
   const leap = Math.random() < 0.15;
   const maxStep = leap ? Math.min(5, Math.floor(len / 2)) : 2;
   const step = Math.floor(Math.random() * maxStep) + 1;
   const dir = Math.random() < 0.5 ? 1 : -1;
 
   let next = prevIdx + dir * step;
-  // Bounce off edges
   if (next < 0) next = -next;
   if (next >= len) next = 2 * (len - 1) - next;
   next = Math.max(0, Math.min(len - 1, next));
@@ -61,12 +59,13 @@ export function useAutoPlay(
     }
   }, [noteOff, setPressedNotes]);
 
-  const start = useCallback((scaleKey: string, rootIndex: number, bpm: number) => {
+  const start = useCallback((scaleKey: string, rootIndex: number, bpm: number, octaves: number = 2) => {
     stop();
     playingRef.current = true;
 
+    const allKeys = buildKeys(3, 3 + octaves);
     const scale = SCALES[scaleKey];
-    const scaleNotes = getScaleNotes(rootIndex, scale.intervals);
+    const scaleNotes = getScaleNotes(allKeys, rootIndex, scale.intervals);
     if (scaleNotes.length === 0) return;
 
     noteIdxRef.current = Math.floor(scaleNotes.length / 2);
@@ -84,7 +83,6 @@ export function useAutoPlay(
         });
       }
 
-      // Occasional rest
       if (Math.random() < 0.1) {
         currentNoteRef.current = null;
         const restDur = (60 / bpm) * (Math.random() < 0.5 ? 0.5 : 1);

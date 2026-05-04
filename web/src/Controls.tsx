@@ -4,7 +4,9 @@ import { SCALES } from './constants';
 interface Props {
   scaleKey: string;
   rootIndex: number;
-  onAutoPlayStart: (scaleKey: string, rootIndex: number, bpm: number) => void;
+  octaves: 1 | 2;
+  onOctavesChange: (v: 1 | 2) => void;
+  onAutoPlayStart: (scaleKey: string, rootIndex: number, bpm: number, octaves: number) => void;
   onAutoPlayStop: () => void;
   onMetronomeStart: (bpm: number) => void;
   onMetronomeStop: () => void;
@@ -14,6 +16,8 @@ interface Props {
 export function Controls({
   scaleKey,
   rootIndex,
+  octaves,
+  onOctavesChange,
   onAutoPlayStart,
   onAutoPlayStop,
   onMetronomeStart,
@@ -30,7 +34,7 @@ export function Controls({
       onAutoPlayStop();
       setAutoPlaying(false);
     } else {
-      onAutoPlayStart(scaleKey, rootIndex, bpm);
+      onAutoPlayStart(scaleKey, rootIndex, bpm, octaves);
       setAutoPlaying(true);
     }
   }, [autoPlaying, scaleKey, rootIndex, bpm, onAutoPlayStart, onAutoPlayStop]);
@@ -45,21 +49,18 @@ export function Controls({
     }
   }, [metronomeOn, bpm, onMetronomeStart, onMetronomeStop]);
 
-  // Restart running features when BPM changes
   useEffect(() => {
-    if (autoPlaying) onAutoPlayStart(scaleKey, rootIndex, bpm);
+    if (autoPlaying) onAutoPlayStart(scaleKey, rootIndex, bpm, octaves);
   }, [bpm]);
 
   useEffect(() => {
     if (metronomeOn) onMetronomeStart(bpm);
   }, [bpm]);
 
-  // Restart auto-play when scale/root changes
   useEffect(() => {
-    if (autoPlaying) onAutoPlayStart(scaleKey, rootIndex, bpm);
+    if (autoPlaying) onAutoPlayStart(scaleKey, rootIndex, bpm, octaves);
   }, [scaleKey, rootIndex]);
 
-  // Stop auto-play on unmount
   useEffect(() => {
     return () => {
       onAutoPlayStop();
@@ -70,9 +71,28 @@ export function Controls({
   const beatDots = [0, 1, 2, 3];
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+    <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+      {/* Octave selector */}
+      <div className="flex items-center gap-1">
+        <span className="text-[#666] text-xs">Oct</span>
+        {([1, 2] as const).map(n => (
+          <button
+            key={n}
+            onClick={() => onOctavesChange(n)}
+            className="w-7 h-7 rounded-md text-xs font-medium border cursor-pointer transition-all duration-200 flex items-center justify-center"
+            style={{
+              background: octaves === n ? color : 'transparent',
+              borderColor: octaves === n ? color : '#333',
+              color: octaves === n ? '#fff' : '#888',
+            }}
+          >
+            {n}
+          </button>
+        ))}
+      </div>
+
       {/* BPM control */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         <span className="text-[#666] text-xs">BPM</span>
         <button
           onClick={() => setBpm(b => Math.max(40, b - 10))}
@@ -92,7 +112,7 @@ export function Controls({
       {/* Auto-play */}
       <button
         onClick={toggleAutoPlay}
-        className="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border cursor-pointer transition-all duration-200 whitespace-nowrap"
+        className="px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium border cursor-pointer transition-all duration-200 whitespace-nowrap"
         style={{
           background: autoPlaying ? color : 'transparent',
           borderColor: autoPlaying ? color : '#333',
@@ -100,14 +120,14 @@ export function Controls({
           boxShadow: autoPlaying ? `0 0 12px ${color}44` : 'none',
         }}
       >
-        {autoPlaying ? '⏹ 自動演奏 停止' : '▶ 自動演奏'}
+        {autoPlaying ? '⏹ 停止' : '▶ 自動演奏'}
       </button>
 
       {/* Metronome */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         <button
           onClick={toggleMetronome}
-          className="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border cursor-pointer transition-all duration-200 whitespace-nowrap"
+          className="px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium border cursor-pointer transition-all duration-200 whitespace-nowrap"
           style={{
             background: metronomeOn ? '#F59E0B' : 'transparent',
             borderColor: metronomeOn ? '#F59E0B' : '#333',
@@ -115,7 +135,7 @@ export function Controls({
             boxShadow: metronomeOn ? `0 0 12px #F59E0B44` : 'none',
           }}
         >
-          {metronomeOn ? '⏹ メトロノーム' : '🔔 メトロノーム'}
+          {metronomeOn ? '⏹ 停止' : '🔔 メトロノーム'}
         </button>
         {metronomeOn && (
           <div className="flex gap-1">

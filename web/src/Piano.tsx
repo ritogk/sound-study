@@ -1,7 +1,9 @@
 import { useCallback } from 'react';
-import { PIANO_KEYS, REVERSE_KEY_MAP, SCALES, isInScale, isRoot, type KeyInfo } from './constants';
+import { SCALES, isInScale, isRoot, type KeyInfo } from './constants';
 
 interface Props {
+  keys: KeyInfo[];
+  reverseKeyMap: Record<string, string>;
   scaleKey: string;
   rootIndex: number;
   pressedNotes: Set<string>;
@@ -9,9 +11,9 @@ interface Props {
   noteOff: (note: string) => void;
 }
 
-export function Piano({ scaleKey, rootIndex, pressedNotes, noteOn, noteOff }: Props) {
+export function Piano({ keys, reverseKeyMap, scaleKey, rootIndex, pressedNotes, noteOn, noteOff }: Props) {
   const scale = SCALES[scaleKey];
-  const whiteKeys = PIANO_KEYS.filter(k => !k.isBlack);
+  const whiteKeys = keys.filter(k => !k.isBlack);
   const totalWhite = whiteKeys.length;
 
   return (
@@ -30,13 +32,11 @@ export function Piano({ scaleKey, rootIndex, pressedNotes, noteOn, noteOff }: Pr
           isPressed={pressedNotes.has(key.note)}
           noteOn={noteOn}
           noteOff={noteOff}
+          reverseKeyMap={reverseKeyMap}
         />
       ))}
-      {PIANO_KEYS.filter(k => k.isBlack).map(key => {
-        const whiteIdx = whiteKeys.findIndex(w => {
-          const wMidi = w.midi;
-          return key.midi === wMidi + 1;
-        });
+      {keys.filter(k => k.isBlack).map(key => {
+        const whiteIdx = whiteKeys.findIndex(w => key.midi === w.midi + 1);
         return (
           <BlackKey
             key={key.note}
@@ -48,6 +48,7 @@ export function Piano({ scaleKey, rootIndex, pressedNotes, noteOn, noteOff }: Pr
             isPressed={pressedNotes.has(key.note)}
             noteOn={noteOn}
             noteOff={noteOff}
+            reverseKeyMap={reverseKeyMap}
           />
         );
       })}
@@ -62,12 +63,13 @@ interface KeyProps {
   isPressed: boolean;
   noteOn: (note: string) => void;
   noteOff: (note: string) => void;
+  reverseKeyMap: Record<string, string>;
 }
 
-function WhiteKey({ keyInfo, index, totalWhite, scale, rootIndex, isPressed, noteOn, noteOff }: KeyProps & { index: number; totalWhite: number }) {
+function WhiteKey({ keyInfo, index, totalWhite, scale, rootIndex, isPressed, noteOn, noteOff, reverseKeyMap }: KeyProps & { index: number; totalWhite: number }) {
   const inScale = isInScale(keyInfo.semitone, rootIndex, scale.intervals);
   const isRootNote = isRoot(keyInfo.semitone, rootIndex);
-  const keyBind = REVERSE_KEY_MAP[keyInfo.note];
+  const keyBind = reverseKeyMap[keyInfo.note];
 
   const widthPct = 100 / totalWhite;
   const leftPct = index * widthPct;
@@ -122,10 +124,10 @@ function WhiteKey({ keyInfo, index, totalWhite, scale, rootIndex, isPressed, not
   );
 }
 
-function BlackKey({ keyInfo, whiteIndex, totalWhite, scale, rootIndex, isPressed, noteOn, noteOff }: KeyProps & { whiteIndex: number; totalWhite: number }) {
+function BlackKey({ keyInfo, whiteIndex, totalWhite, scale, rootIndex, isPressed, noteOn, noteOff, reverseKeyMap }: KeyProps & { whiteIndex: number; totalWhite: number }) {
   const inScale = isInScale(keyInfo.semitone, rootIndex, scale.intervals);
   const isRootNote = isRoot(keyInfo.semitone, rootIndex);
-  const keyBind = REVERSE_KEY_MAP[keyInfo.note];
+  const keyBind = reverseKeyMap[keyInfo.note];
 
   const widthPct = 100 / totalWhite;
   const leftPct = (whiteIndex + 0.65) * widthPct;

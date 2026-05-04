@@ -15,12 +15,12 @@ export const SCALES: Record<string, { name: string; intervals: number[]; color: 
 export const ROOT_NOTES = NOTE_NAMES_EN.map((name, i) => ({ name, index: i }));
 
 export interface KeyInfo {
-  note: string;       // e.g. "C3"
-  midi: number;       // MIDI number
+  note: string;
+  midi: number;
   isBlack: boolean;
   nameJa: string;
   nameEn: string;
-  semitone: number;   // 0-11
+  semitone: number;
 }
 
 export function buildKeys(startOctave: number, endOctave: number): KeyInfo[] {
@@ -42,21 +42,26 @@ export function buildKeys(startOctave: number, endOctave: number): KeyInfo[] {
   return keys;
 }
 
-export const PIANO_KEYS = buildKeys(3, 5);
+const KEY_SEQUENCE_1OCT = [
+  'a','w','s','e','d','f','t','g','y','h','u','j','k',
+];
+const KEY_SEQUENCE_2OCT = [
+  'a','w','s','e','d','f','t','g','y','h','u','j',
+  'k','o','l','p',';',"'",'z','x',',','c','.','v','b',
+];
 
-export const KEY_MAP: Record<string, string> = {
-  'a': 'C3', 'w': 'C#3', 's': 'D3', 'e': 'D#3', 'd': 'E3',
-  'f': 'F3', 't': 'F#3', 'g': 'G3', 'y': 'G#3', 'h': 'A3',
-  'u': 'A#3', 'j': 'B3',
-  'k': 'C4', 'o': 'C#4', 'l': 'D4', 'p': 'D#4', ';': 'E4',
-  "'": 'F4',
-  'z': 'F#4', 'x': 'G4', ',': 'G#4', 'c': 'A4', '.': 'A#4', 'v': 'B4',
-  'b': 'C5',
-};
+export function buildKeyMap(keys: KeyInfo[]): Record<string, string> {
+  const seq = keys.length <= 13 ? KEY_SEQUENCE_1OCT : KEY_SEQUENCE_2OCT;
+  const map: Record<string, string> = {};
+  for (let i = 0; i < Math.min(keys.length, seq.length); i++) {
+    map[seq[i]] = keys[i].note;
+  }
+  return map;
+}
 
-export const REVERSE_KEY_MAP: Record<string, string> = Object.fromEntries(
-  Object.entries(KEY_MAP).map(([k, v]) => [v, k])
-);
+export function buildReverseKeyMap(keyMap: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(Object.entries(keyMap).map(([k, v]) => [v, k]));
+}
 
 export function isInScale(semitone: number, rootIndex: number, intervals: number[]): boolean {
   const relative = (semitone - rootIndex + 12) % 12;

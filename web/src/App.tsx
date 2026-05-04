@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { SCALES, NOTE_NAMES_EN } from './constants';
+import { useState, useCallback, useMemo } from 'react';
+import { SCALES, NOTE_NAMES_EN, buildKeys, buildKeyMap, buildReverseKeyMap } from './constants';
 import { useSynth, initAudio } from './useSynth';
 import { useKeyboard } from './useKeyboard';
 import { useAutoPlay } from './useAutoPlay';
@@ -13,13 +13,18 @@ import { Controls } from './Controls';
 export default function App() {
   const [scaleKey, setScaleKey] = useState('major');
   const [rootIndex, setRootIndex] = useState(0);
+  const [octaves, setOctaves] = useState<1 | 2>(2);
   const [pressedNotes, setPressedNotes] = useState<Set<string>>(new Set());
   const [audioReady, setAudioReady] = useState(false);
   const { noteOn, noteOff } = useSynth();
   const autoPlay = useAutoPlay(noteOn, noteOff, setPressedNotes);
   const metronome = useMetronome();
 
-  useKeyboard(noteOn, noteOff, setPressedNotes);
+  const pianoKeys = useMemo(() => buildKeys(3, 3 + octaves), [octaves]);
+  const keyMap = useMemo(() => buildKeyMap(pianoKeys), [pianoKeys]);
+  const reverseKeyMap = useMemo(() => buildReverseKeyMap(keyMap), [keyMap]);
+
+  useKeyboard(keyMap, noteOn, noteOff, setPressedNotes);
 
   const scale = SCALES[scaleKey];
   const rootName = NOTE_NAMES_EN[rootIndex];
@@ -81,6 +86,8 @@ export default function App() {
         <Controls
           scaleKey={scaleKey}
           rootIndex={rootIndex}
+          octaves={octaves}
+          onOctavesChange={setOctaves}
           onAutoPlayStart={autoPlay.start}
           onAutoPlayStop={autoPlay.stop}
           onMetronomeStart={metronome.start}
@@ -91,6 +98,8 @@ export default function App() {
 
       <div className="flex-1 min-h-0">
         <Piano
+          keys={pianoKeys}
+          reverseKeyMap={reverseKeyMap}
           scaleKey={scaleKey}
           rootIndex={rootIndex}
           pressedNotes={pressedNotes}

@@ -1,18 +1,20 @@
 import { useEffect, useRef } from 'react';
-import { KEY_MAP } from './constants';
 
 export function useKeyboard(
+  keyMap: Record<string, string>,
   noteOn: (note: string) => void,
   noteOff: (note: string) => void,
   setPressed: React.Dispatch<React.SetStateAction<Set<string>>>,
 ) {
   const activeKeysRef = useRef(new Set<string>());
+  const keyMapRef = useRef(keyMap);
+  keyMapRef.current = keyMap;
 
   useEffect(() => {
     const handleDown = (e: KeyboardEvent) => {
       if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
       const key = e.key.toLowerCase();
-      const note = KEY_MAP[key];
+      const note = keyMapRef.current[key];
       if (!note || activeKeysRef.current.has(key)) return;
       activeKeysRef.current.add(key);
       setPressed(prev => new Set(prev).add(note));
@@ -21,7 +23,7 @@ export function useKeyboard(
 
     const handleUp = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
-      const note = KEY_MAP[key];
+      const note = keyMapRef.current[key];
       if (!note) return;
       activeKeysRef.current.delete(key);
       setPressed(prev => {
