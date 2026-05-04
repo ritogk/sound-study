@@ -44,23 +44,34 @@ export const TONE_PRESETS: TonePreset[] = [
   },
 ];
 
-// Tone.js is loaded dynamically to avoid creating an AudioContext before user gesture
 let Tone: typeof import('tone') | null = null;
 let globalSynth: import('tone').PolySynth | null = null;
 let initPromise: Promise<void> | null = null;
 
 export function initAudio() {
   if (initPromise) return initPromise;
-  initPromise = _initAudio();
+
+  // Create and unlock AudioContext synchronously within user gesture
+  const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  const rawCtx = new AudioCtx({ latencyHint: 'interactive' as AudioContextLatencyCategory });
+  const buf = rawCtx.createBuffer(1, 1, 22050);
+  const src = rawCtx.createBufferSource();
+  src.buffer = buf;
+  src.connect(rawCtx.destination);
+  src.start(0);
+
+  initPromise = _initAudio(rawCtx);
   return initPromise;
 }
 
-async function _initAudio() {
+async function _initAudio(rawCtx: AudioContext) {
+  if (rawCtx.state !== 'running') {
+    await rawCtx.resume();
+  }
+
   Tone = await import('tone');
 
-  Tone.setContext(new Tone.Context({ latencyHint: 'interactive', lookAhead: 0.01 }));
-  await Tone.start();
-  await Tone.getContext().rawContext.resume();
+  Tone.setContext(rawCtx);
 
   const synth = new Tone.PolySynth(Tone.Synth, {
     oscillator: { type: 'triangle8' },
