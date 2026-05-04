@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { SCALES, NOTE_NAMES_EN, buildKeys, buildKeyMap, buildReverseKeyMap } from './constants';
+import { buildKeys, buildKeyMap, buildReverseKeyMap } from './constants';
 import { useSynth, initAudio } from './useSynth';
 import { useKeyboard } from './useKeyboard';
 import { useAutoPlay } from './useAutoPlay';
@@ -25,9 +25,6 @@ export default function App() {
   const reverseKeyMap = useMemo(() => buildReverseKeyMap(keyMap), [keyMap]);
 
   useKeyboard(keyMap, noteOn, noteOff, setPressedNotes);
-
-  const scale = SCALES[scaleKey];
-  const rootName = NOTE_NAMES_EN[rootIndex];
 
   const handleStartAudio = useCallback(async () => {
     await initAudio();
@@ -63,15 +60,6 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-full px-2 sm:px-6 py-1.5 sm:py-3 gap-1 sm:gap-2 landscape-compact:gap-0.5 landscape-compact:py-0.5">
-      <header className="text-center shrink-0">
-        <h1 className="text-base sm:text-2xl font-bold tracking-tight text-white landscape-compact:text-sm leading-tight">
-          🎹 Sound Study
-          <span className="ml-2 text-xs sm:text-sm font-normal text-[#666]">
-            {rootName} {scale.name}
-          </span>
-        </h1>
-      </header>
-
       <div className="flex flex-col gap-1 sm:gap-1.5 landscape-compact:gap-0.5 shrink-0">
         <ScaleSelector selected={scaleKey} onSelect={setScaleKey} />
         <RootSelector selected={rootIndex} onSelect={setRootIndex} scaleKey={scaleKey} />
