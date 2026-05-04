@@ -4,9 +4,8 @@ import * as Tone from 'tone';
 export function useMetronome() {
   const [beat, setBeat] = useState(-1);
   const clickRef = useRef<Tone.MembraneSynth | null>(null);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const schedulerRef = useRef<number | null>(null);
   const playingRef = useRef(false);
-  const beatRef = useRef(0);
 
   const getClick = useCallback(() => {
     if (!clickRef.current) {
@@ -22,32 +21,34 @@ export function useMetronome() {
 
   const stop = useCallback(() => {
     playingRef.current = false;
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+    if (schedulerRef.current !== null) {
+      Tone.getTransport().clear(schedulerRef.current);
+      schedulerRef.current = null;
     }
+    Tone.getTransport().stop();
     setBeat(-1);
-    beatRef.current = 0;
   }, []);
 
   const start = useCallback((bpm: number) => {
     stop();
     playingRef.current = true;
-    beatRef.current = 0;
 
     const click = getClick();
-    const interval = (60 / bpm) * 1000;
+    const transport = Tone.getTransport();
+    transport.bpm.value = bpm;
+    transport.position = 0;
 
-    const tick = () => {
+    let beatCount = 0;
+    schedulerRef.current = transport.scheduleRepeat((time) => {
       if (!playingRef.current) return;
-      const isDownbeat = beatRef.current % 4 === 0;
-      click.triggerAttackRelease(isDownbeat ? 'C2' : 'C3', '32n', Tone.now());
-      setBeat(beatRef.current % 4);
-      beatRef.current++;
-    };
+      const isDownbeat = beatCount % 4 === 0;
+      click.triggerAttackRelease(isDownbeat ? 'C2' : 'C3', '32n', time);
+      const b = beatCount % 4;
+      beatCount++;
+      Tone.getDraw().schedule(() => setBeat(b), time);
+    }, '4n');
 
-    tick();
-    timerRef.current = setInterval(tick, interval);
+    transport.start();
   }, [stop, getClick]);
 
   useEffect(() => {

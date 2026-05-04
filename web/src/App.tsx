@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { SCALES, NOTE_NAMES_EN } from './constants';
-import { useSynth } from './useSynth';
+import { useSynth, initAudio } from './useSynth';
 import { useKeyboard } from './useKeyboard';
 import { useAutoPlay } from './useAutoPlay';
 import { useMetronome } from './useMetronome';
@@ -15,7 +15,7 @@ export default function App() {
   const [rootIndex, setRootIndex] = useState(0);
   const [pressedNotes, setPressedNotes] = useState<Set<string>>(new Set());
   const [audioReady, setAudioReady] = useState(false);
-  const { noteOn, noteOff, ensureAudio } = useSynth();
+  const { noteOn, noteOff } = useSynth();
   const autoPlay = useAutoPlay(noteOn, noteOff, setPressedNotes);
   const metronome = useMetronome();
 
@@ -25,9 +25,9 @@ export default function App() {
   const rootName = NOTE_NAMES_EN[rootIndex];
 
   const handleStartAudio = useCallback(async () => {
-    await ensureAudio();
+    await initAudio();
     setAudioReady(true);
-  }, [ensureAudio]);
+  }, []);
 
   const handleNoteOn = useCallback((note: string) => {
     setPressedNotes(prev => new Set(prev).add(note));
