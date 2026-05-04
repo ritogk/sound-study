@@ -46,8 +46,15 @@ export const TONE_PRESETS: TonePreset[] = [
 ];
 
 let globalSynth: Tone.PolySynth | null = null;
+let initPromise: Promise<void> | null = null;
 
-export async function initAudio() {
+export function initAudio() {
+  if (initPromise) return initPromise;
+  initPromise = _initAudio();
+  return initPromise;
+}
+
+async function _initAudio() {
   Tone.setContext(new Tone.Context({ latencyHint: 'interactive', lookAhead: 0.01 }));
   await Tone.start();
   await Tone.getContext().rawContext.resume();
