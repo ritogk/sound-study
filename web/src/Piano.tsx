@@ -16,8 +16,8 @@ export function Piano({ scaleKey, rootIndex, pressedNotes, noteOn, noteOff }: Pr
 
   return (
     <div
-      className="relative mx-auto select-none"
-      style={{ width: '100%', maxWidth: `${totalWhite * 52}px`, height: 'clamp(120px, 28vh, 220px)' }}
+      className="relative mx-auto select-none h-full"
+      style={{ width: '100%', maxWidth: `${totalWhite * 52}px` }}
     >
       {whiteKeys.map((key, i) => (
         <WhiteKey

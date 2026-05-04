@@ -89,7 +89,7 @@ export default function App() {
         />
       </div>
 
-      <div className="shrink-0 pb-1 sm:pb-2 landscape-compact:pb-0.5">
+      <div className="flex-1 min-h-0">
         <Piano
           scaleKey={scaleKey}
           rootIndex={rootIndex}
@@ -98,12 +98,6 @@ export default function App() {
           noteOff={handleNoteOff}
         />
       </div>
-
-      <div className="flex-1" />
-
-      <footer className="text-center text-[10px] sm:text-xs text-[#444] shrink-0 pb-0.5 landscape-compact:hidden">
-        PCキーボード A〜B 列で演奏 ／ マウス・タッチでも操作可能
-      </footer>
     </div>
   );
 }
