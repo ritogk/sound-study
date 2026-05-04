@@ -52,8 +52,7 @@ export default function App() {
     return (
       <div
         className="flex flex-col items-center justify-center h-full gap-4 cursor-pointer"
-        onClick={handleStartAudio}
-        onTouchEnd={handleStartAudio}
+        onPointerDown={handleStartAudio}
       >
         <div className="text-5xl">🎹</div>
         <h1 className="text-2xl font-bold text-white">Sound Study</h1>
