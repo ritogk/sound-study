@@ -1,22 +1,15 @@
 import { useRef, useCallback, useEffect, useState } from 'react';
-
-let Tone: typeof import('tone') | null = null;
-
-async function getTone() {
-  if (!Tone) Tone = await import('tone');
-  return Tone;
-}
+import * as Tone from 'tone';
 
 export function useMetronome() {
   const [beat, setBeat] = useState(-1);
-  const clickRef = useRef<import('tone').MembraneSynth | null>(null);
+  const clickRef = useRef<Tone.MembraneSynth | null>(null);
   const schedulerRef = useRef<number | null>(null);
   const playingRef = useRef(false);
 
-  const getClick = useCallback(async () => {
-    const T = await getTone();
+  const getClick = useCallback(() => {
     if (!clickRef.current) {
-      clickRef.current = new T.MembraneSynth({
+      clickRef.current = new Tone.MembraneSynth({
         pitchDecay: 0.008,
         octaves: 2,
         envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.05 },
@@ -26,24 +19,22 @@ export function useMetronome() {
     return clickRef.current;
   }, []);
 
-  const stop = useCallback(async () => {
+  const stop = useCallback(() => {
     playingRef.current = false;
-    const T = await getTone();
     if (schedulerRef.current !== null) {
-      T.getTransport().clear(schedulerRef.current);
+      Tone.getTransport().clear(schedulerRef.current);
       schedulerRef.current = null;
     }
-    T.getTransport().stop();
+    Tone.getTransport().stop();
     setBeat(-1);
   }, []);
 
-  const start = useCallback(async (bpm: number) => {
-    await stop();
+  const start = useCallback((bpm: number) => {
+    stop();
     playingRef.current = true;
 
-    const T = await getTone();
-    const click = await getClick();
-    const transport = T.getTransport();
+    const click = getClick();
+    const transport = Tone.getTransport();
     transport.bpm.value = bpm;
     transport.position = 0;
 
@@ -54,7 +45,7 @@ export function useMetronome() {
       click.triggerAttackRelease(isDownbeat ? 'C2' : 'C3', '32n', time);
       const b = beatCount % 4;
       beatCount++;
-      T.getDraw().schedule(() => setBeat(b), time);
+      Tone.getDraw().schedule(() => setBeat(b), time);
     }, '4n');
 
     transport.start();
@@ -62,15 +53,11 @@ export function useMetronome() {
 
   useEffect(() => {
     return () => {
-      playingRef.current = false;
-      if (Tone && schedulerRef.current !== null) {
-        Tone.getTransport().clear(schedulerRef.current);
-        Tone.getTransport().stop();
-      }
+      stop();
       clickRef.current?.dispose();
       clickRef.current = null;
     };
-  }, []);
+  }, [stop]);
 
   return { start, stop, beat };
 }

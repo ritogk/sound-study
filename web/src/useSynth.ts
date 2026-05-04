@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
+import * as Tone from 'tone';
 
 export interface TonePreset {
   name: string;
@@ -44,34 +45,19 @@ export const TONE_PRESETS: TonePreset[] = [
   },
 ];
 
-let Tone: typeof import('tone') | null = null;
-let globalSynth: import('tone').PolySynth | null = null;
+let globalSynth: Tone.PolySynth | null = null;
 let initPromise: Promise<void> | null = null;
 
 export function initAudio() {
   if (initPromise) return initPromise;
-
-  // Create and unlock AudioContext synchronously within user gesture
-  const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-  const rawCtx = new AudioCtx({ latencyHint: 'interactive' as AudioContextLatencyCategory });
-  const buf = rawCtx.createBuffer(1, 1, 22050);
-  const src = rawCtx.createBufferSource();
-  src.buffer = buf;
-  src.connect(rawCtx.destination);
-  src.start(0);
-
-  initPromise = _initAudio(rawCtx);
+  initPromise = _initAudio();
   return initPromise;
 }
 
-async function _initAudio(rawCtx: AudioContext) {
-  if (rawCtx.state !== 'running') {
-    await rawCtx.resume();
-  }
-
-  Tone = await import('tone');
-
-  Tone.setContext(rawCtx);
+async function _initAudio() {
+  Tone.setContext(new Tone.Context({ latencyHint: 'interactive', lookAhead: 0.01 }));
+  await Tone.start();
+  await Tone.getContext().rawContext.resume();
 
   const synth = new Tone.PolySynth(Tone.Synth, {
     oscillator: { type: 'triangle8' },
@@ -85,25 +71,23 @@ async function _initAudio(rawCtx: AudioContext) {
 }
 
 export function setTonePreset(index: number) {
-  if (!globalSynth || !Tone) return;
+  if (!globalSynth) return;
   const preset = TONE_PRESETS[index];
   if (!preset) return;
-  globalSynth.set(preset.options as unknown as Partial<import('tone').SynthOptions>);
+  globalSynth.set(preset.options as unknown as Partial<Tone.SynthOptions>);
 }
 
 export function useSynth() {
   const disposedRef = useRef(false);
 
   const noteOn = useCallback((note: string) => {
-    if (!disposedRef.current && globalSynth && Tone) {
+    if (!disposedRef.current && globalSynth) {
       globalSynth.triggerAttack(note, Tone.now());
     }
   }, []);
 
   const noteOff = useCallback((note: string) => {
-    if (globalSynth && Tone) {
-      globalSynth.triggerRelease(note, Tone.now());
-    }
+    globalSynth?.triggerRelease(note, Tone.now());
   }, []);
 
   useEffect(() => {
